@@ -48,7 +48,7 @@ class TaigaOptionsForm(forms.Form):
         widget=forms.TextInput(attrs={'placeholder': 'e.g. high, bug'}),
         help_text=_('Enter comma separated labels you '
                     'want to auto assign to issues.'),
-        required=True)
+        required=False)
 
 
 class TaigaPlugin(IssuePlugin):
@@ -123,8 +123,10 @@ class TaigaPlugin(IssuePlugin):
         data = {'subject': form_data['title'], 
             'priority': default_priority, 'status': default_issue_status,
             'issue_type': default_issue_type, 'severity': default_severity,
-            'description': form_data['description'], 
-            'tags': map(lambda x:x.strip(), labels.split(","))}
+            'description': form_data['description']}
+
+        if labels:
+            data['tags'] = map(lambda x:x.strip(), labels.split(","))
 
         issue = project.add_issue(**data)
 
