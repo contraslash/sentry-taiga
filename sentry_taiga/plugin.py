@@ -19,8 +19,11 @@ class TaigaOptionsForm(forms.Form):
         label=_('Taiga URL'),
         widget=forms.TextInput(attrs={'placeholder': 
                                       'e.g. https://taiga.example.com'}),
-        help_text=_('Enter the URL for your Taiga server'),
-        required=True)
+        help_text=_(
+            'Enter the URL for your Taiga server. '
+            'If you use "https://tree/taiga.io" as host, don\'t fill this field.'
+        ),
+        required=False)
 
     taiga_username = forms.CharField(
         label=_('Taiga User Name'),
@@ -45,7 +48,7 @@ class TaigaOptionsForm(forms.Form):
         widget=forms.TextInput(attrs={'placeholder': 'e.g. high, bug'}),
         help_text=_('Enter comma separated labels you '
                     'want to auto assign to issues.'),
-        required=False)
+        required=True)
 
 
 class TaigaPlugin(IssuePlugin):
@@ -77,8 +80,11 @@ class TaigaPlugin(IssuePlugin):
         password = self.get_option('taiga_password', group.project)
         project_slug = self.get_option('taiga_project', group.project)
         labels = self.get_option('taiga_labels', group.project)
-        
-        tg = TaigaAPI(host=url)
+
+        if url:
+            tg = TaigaAPI(host=url)
+        else:
+            tg = TaigaAPI()
 
         try:
             tg.auth(username=username, password=password)
@@ -86,9 +92,8 @@ class TaigaPlugin(IssuePlugin):
             raise forms.ValidationError(_('Error Communicating '
                                         'with Taiga: %s') % (e,))
 
-        projects = tg.projects.list()
-        
-        project = projects.get(slug=project_slug)
+
+        project = tg.projects.get_by_slug(project_slug)
         if project is None:
             raise forms.ValidationError(_('No project found in Taiga with slug %s') % 
                                         (project_slug,))
