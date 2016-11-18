@@ -132,10 +132,14 @@ class TaigaPlugin(IssuePlugin):
 
 
     def get_issue_label(self, group, issue_id, **kwargs):
-        return 'TG-%s' % issue_id
+        return 'TaigaID-%s' % issue_id
 
     def get_issue_url(self, group, issue_id, **kwargs):
         url = self.get_option('taiga_url', group.project)
+        if url:
+            pass
+        else:
+            url = 'https://tree.taiga.io'
         slug = self.get_option('taiga_project', group.project)
 
         return '%s/project/%s/issue/%s' % (url, slug, issue_id)
